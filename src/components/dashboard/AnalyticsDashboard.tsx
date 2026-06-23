@@ -1,7 +1,7 @@
 
 "use client"
 
-import React, { useState, useEffect } from 'react'
+import React, { useMemo } from 'react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Language, translations } from "@/app/lib/translations"
 import { 
@@ -14,16 +14,14 @@ import {
   ResponsiveContainer,
   Cell
 } from 'recharts'
-import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
 import { Badge } from "@/components/ui/badge"
-import { Sparkles, Download, FileJson, FileType, AlertTriangle, Lightbulb } from "lucide-react"
+import { FileJson, FileType, AlertTriangle, Lightbulb, Calculator, Info } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { municipalTaxAdvisor, MunicipalTaxAdvisorOutput } from "@/ai/flows/municipal-tax-advisor"
-import { Skeleton } from "@/components/ui/skeleton"
 
 interface AnalyticsDashboardProps {
   lang: Language
   inputs: {
+    category: string
     grossIncome: number
     taxRate: number
     minimumTaxable: number
@@ -32,36 +30,37 @@ interface AnalyticsDashboardProps {
 
 export function AnalyticsDashboard({ lang, inputs }: AnalyticsDashboardProps) {
   const t = translations[lang]
-  const [aiData, setAiData] = useState<MunicipalTaxAdvisorOutput | null>(null)
-  const [loading, setLoading] = useState(false)
 
+  // Cálculos en tiempo real
   const calculatedTax = (inputs.grossIncome * inputs.taxRate) / 100
   const effectiveTax = Math.max(calculatedTax, inputs.minimumTaxable)
   const isUsingMin = inputs.minimumTaxable > calculatedTax
+  const taxBurden = inputs.grossIncome > 0 ? (effectiveTax / inputs.grossIncome) * 100 : 0
 
-  const chartData = [
-    { name: t.taxLabel, value: calculatedTax, fill: "var(--primary)" },
+  const chartData = useMemo(() => [
+    { name: t.taxLabel, value: calculatedTax, fill: "hsl(var(--primary))" },
     { name: t.minLabel, value: inputs.minimumTaxable, fill: isUsingMin ? "hsl(var(--destructive))" : "hsl(var(--muted-foreground))" }
-  ]
-
-  const fetchAIAnalysis = async () => {
-    setLoading(true)
-    try {
-      const result = await municipalTaxAdvisor(inputs)
-      setAiData(result)
-    } catch (error) {
-      console.error("AI Analysis failed", error)
-    } finally {
-      setLoading(false)
-    }
-  }
+  ], [t, calculatedTax, inputs.minimumTaxable, isUsingMin])
 
   const formatCurrency = (val: number) => {
     return new Intl.NumberFormat(lang === 'es' ? 'es-ES' : 'en-US', {
       style: 'currency',
-      currency: 'USD'
+      currency: 'USD',
+      maximumFractionDigits: 0
     }).format(val)
   }
+
+  // Generación de reporte narrativo basado en reglas (Mock de IA)
+  const narrativeAnalysis = useMemo(() => {
+    if (isUsingMin) {
+      return lang === 'es' 
+        ? `Debido a que el impuesto calculado (${formatCurrency(calculatedTax)}) es menor al umbral establecido para el rubro de ${t.categories[inputs.category as keyof typeof t.categories]}, se debe tributar el Mínimo Mensual de ${formatCurrency(inputs.minimumTaxable)}.`
+        : `Since the calculated tax (${formatCurrency(calculatedTax)}) is lower than the threshold for ${t.categories[inputs.category as keyof typeof t.categories]}, the Monthly Minimum of ${formatCurrency(inputs.minimumTaxable)} applies.`;
+    }
+    return lang === 'es'
+      ? `Su actividad económica en el rubro de ${t.categories[inputs.category as keyof typeof t.categories]} ha superado el mínimo tributable. El impuesto se calcula sobre el ${inputs.taxRate}% de sus ingresos brutos.`
+      : `Your economic activity in ${t.categories[inputs.category as keyof typeof t.categories]} has exceeded the minimum threshold. The tax is calculated as ${inputs.taxRate}% of your gross income.`;
+  }, [lang, isUsingMin, calculatedTax, inputs, t])
 
   return (
     <div className="flex flex-col gap-6 w-full max-w-7xl mx-auto p-4 md:p-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -69,7 +68,7 @@ export function AnalyticsDashboard({ lang, inputs }: AnalyticsDashboardProps) {
         <div>
           <h1 className="text-3xl font-bold tracking-tight">{t.overview}</h1>
           <p className="text-muted-foreground mt-1">
-            {lang === 'es' ? 'Análisis fiscal en tiempo real basado en sus ingresos declarados.' : 'Real-time fiscal analysis based on your declared income.'}
+            {lang === 'es' ? 'Simulación interactiva para la administración tributaria.' : 'Interactive simulation for tax administration.'}
           </p>
         </div>
         <div className="flex gap-2">
@@ -85,32 +84,37 @@ export function AnalyticsDashboard({ lang, inputs }: AnalyticsDashboardProps) {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <Card className="shadow-lg border-primary/10">
+        <Card className="shadow-lg border-primary/10 hover:border-primary/30 transition-colors">
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground uppercase tracking-wider">{t.calculatedTax}</CardTitle>
+            <CardTitle className="text-xs font-bold text-muted-foreground uppercase tracking-widest">{t.calculatedTax}</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold font-code text-primary">{formatCurrency(calculatedTax)}</div>
+            <div className="text-3xl font-bold font-code text-primary/80">{formatCurrency(calculatedTax)}</div>
+            <p className="text-[10px] text-muted-foreground mt-1">{inputs.taxRate}% of {formatCurrency(inputs.grossIncome)}</p>
           </CardContent>
         </Card>
-        <Card className="shadow-lg border-primary/10">
+        <Card className="shadow-lg border-primary/20 bg-primary/[0.02]">
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground uppercase tracking-wider">{t.effectiveTax}</CardTitle>
+            <CardTitle className="text-xs font-bold text-muted-foreground uppercase tracking-widest">{t.effectiveTax}</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold font-code">{formatCurrency(effectiveTax)}</div>
-            <Badge variant={isUsingMin ? "destructive" : "secondary"} className="mt-2">
-              {isUsingMin ? (lang === 'es' ? 'Mínimo Aplicado' : 'Min Applied') : (lang === 'es' ? 'Basado en Tasa' : 'Rate Based')}
+            <div className="text-3xl font-bold font-code text-primary">{formatCurrency(effectiveTax)}</div>
+            <Badge variant={isUsingMin ? "destructive" : "default"} className="mt-2 uppercase text-[9px] tracking-tighter">
+              {isUsingMin ? (lang === 'es' ? 'Mínimo Aplicado' : 'Min Applied') : (lang === 'es' ? 'Exceso sobre Mínimo' : 'Above Minimum')}
             </Badge>
           </CardContent>
         </Card>
         <Card className="shadow-lg border-primary/10">
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground uppercase tracking-wider">{t.taxBurden}</CardTitle>
+            <CardTitle className="text-xs font-bold text-muted-foreground uppercase tracking-widest">{t.taxBurden}</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold font-code">
-              {inputs.grossIncome > 0 ? ((effectiveTax / inputs.grossIncome) * 100).toFixed(2) : '0.00'}%
+            <div className="text-3xl font-bold font-code">{taxBurden.toFixed(2)}%</div>
+            <div className="w-full bg-muted rounded-full h-1 mt-3 overflow-hidden">
+              <div 
+                className="bg-primary h-full transition-all duration-1000" 
+                style={{ width: `${Math.min(taxBurden * 10, 100)}%` }}
+              />
             </div>
           </CardContent>
         </Card>
@@ -119,7 +123,10 @@ export function AnalyticsDashboard({ lang, inputs }: AnalyticsDashboardProps) {
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
         <Card className="lg:col-span-3 shadow-xl">
           <CardHeader>
-            <CardTitle>{t.comparison}</CardTitle>
+            <CardTitle className="text-lg flex items-center gap-2">
+              <Calculator size={18} className="text-primary" />
+              {t.comparison}
+            </CardTitle>
             <CardDescription>{t.taxBreakdown}</CardDescription>
           </CardHeader>
           <CardContent className="h-[350px]">
@@ -130,12 +137,12 @@ export function AnalyticsDashboard({ lang, inputs }: AnalyticsDashboardProps) {
                   dataKey="name" 
                   axisLine={false} 
                   tickLine={false} 
-                  tick={{ fill: 'currentColor', fontSize: 12 }} 
+                  tick={{ fill: 'currentColor', fontSize: 11, fontWeight: 500 }} 
                 />
                 <YAxis 
                   axisLine={false} 
                   tickLine={false} 
-                  tick={{ fill: 'currentColor', fontSize: 12 }} 
+                  tick={{ fill: 'currentColor', fontSize: 11 }} 
                   tickFormatter={(val) => `$${val}`}
                 />
                 <RechartsTooltip 
@@ -143,9 +150,9 @@ export function AnalyticsDashboard({ lang, inputs }: AnalyticsDashboardProps) {
                   content={({ active, payload }) => {
                     if (active && payload && payload.length) {
                       return (
-                        <div className="bg-background border rounded-lg p-3 shadow-xl">
-                          <p className="text-sm font-bold">{payload[0].name}</p>
-                          <p className="text-lg font-code text-primary">{formatCurrency(payload[0].value as number)}</p>
+                        <div className="bg-background border rounded-lg p-3 shadow-2xl border-primary/20">
+                          <p className="text-[10px] font-bold uppercase text-muted-foreground mb-1">{payload[0].name}</p>
+                          <p className="text-xl font-code font-bold text-primary">{formatCurrency(payload[0].value as number)}</p>
                         </div>
                       );
                     }
@@ -154,9 +161,8 @@ export function AnalyticsDashboard({ lang, inputs }: AnalyticsDashboardProps) {
                 />
                 <Bar 
                   dataKey="value" 
-                  radius={[8, 8, 0, 0]} 
-                  barSize={80}
-                  animationDuration={1500}
+                  radius={[6, 6, 0, 0]} 
+                  barSize={60}
                 >
                   {chartData.map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={entry.fill} />
@@ -167,79 +173,62 @@ export function AnalyticsDashboard({ lang, inputs }: AnalyticsDashboardProps) {
           </CardContent>
         </Card>
 
-        <Card className="lg:col-span-2 shadow-xl border-emerald-500/20 bg-emerald-500/[0.02]">
+        <Card className="lg:col-span-2 shadow-xl border-emerald-500/20 bg-emerald-500/[0.01]">
           <CardHeader>
-            <div className="flex items-center justify-between">
-              <CardTitle className="flex items-center gap-2">
-                <Sparkles className="text-primary" size={20} />
-                {t.aiAdvisor}
-              </CardTitle>
-              <Button onClick={fetchAIAnalysis} disabled={loading} size="sm" variant="secondary">
-                {loading ? t.analysisLoading : t.getAnalysis}
-              </Button>
-            </div>
+            <CardTitle className="flex items-center gap-2 text-lg">
+              <Info className="text-primary" size={20} />
+              {t.fiscalAdvisor}
+            </CardTitle>
           </CardHeader>
           <CardContent className="space-y-6">
-            {!aiData && !loading && (
-              <div className="flex flex-col items-center justify-center py-12 text-center text-muted-foreground">
-                <div className="bg-muted rounded-full p-4 mb-4">
-                  <Lightbulb size={32} />
-                </div>
-                <p>{lang === 'es' ? 'Ejecute el análisis para obtener sugerencias de la IA.' : 'Run analysis to get AI-powered suggestions.'}</p>
-              </div>
-            )}
+            <div className="p-4 rounded-lg bg-background border border-primary/10 shadow-sm">
+              <h4 className="text-xs font-bold uppercase text-muted-foreground mb-2 flex items-center gap-2">
+                <Lightbulb size={14} className="text-primary" />
+                {lang === 'es' ? 'Análisis del Cálculo' : 'Calculation Analysis'}
+              </h4>
+              <p className="text-sm leading-relaxed text-foreground/80 italic">
+                "{narrativeAnalysis}"
+              </p>
+            </div>
 
-            {loading && (
-              <div className="space-y-4">
-                <Skeleton className="h-4 w-3/4" />
-                <Skeleton className="h-20 w-full" />
-                <Skeleton className="h-4 w-1/2" />
-                <Skeleton className="h-20 w-full" />
-              </div>
-            )}
-
-            {aiData && (
-              <>
-                <div className="space-y-2">
-                  <h4 className="text-sm font-bold flex items-center gap-2">
-                    <Download size={16} className="text-primary" />
-                    {lang === 'es' ? 'Análisis Narrativo' : 'Narrative Analysis'}
-                  </h4>
-                  <p className="text-sm text-muted-foreground leading-relaxed">
-                    {aiData.analysis}
-                  </p>
-                </div>
-
-                <div className="space-y-2">
-                  <h4 className="text-sm font-bold flex items-center gap-2">
-                    <Lightbulb size={16} className="text-primary" />
-                    {t.optimizationTips}
-                  </h4>
-                  <ul className="text-sm space-y-1">
-                    {aiData.optimizationTips.map((tip, i) => (
-                      <li key={i} className="flex gap-2 text-muted-foreground">
-                        <span className="text-primary">•</span> {tip}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-
-                {aiData.flags.length > 0 && (
-                  <div className="space-y-2">
-                    <h4 className="text-sm font-bold flex items-center gap-2">
-                      <AlertTriangle size={16} className="text-destructive" />
-                      {t.flags}
-                    </h4>
-                    <ul className="text-sm space-y-1">
-                      {aiData.flags.map((flag, i) => (
-                        <li key={i} className="flex gap-2 text-destructive/80">
-                          <span className="text-destructive">•</span> {flag}
-                        </li>
-                      ))}
-                    </ul>
+            <div className="space-y-4">
+              <h4 className="text-xs font-bold uppercase text-muted-foreground tracking-widest flex items-center gap-2">
+                <AlertTriangle size={14} className="text-primary" />
+                {t.optimizationTips}
+              </h4>
+              <ul className="space-y-3">
+                <li className="flex gap-3 text-sm items-start">
+                  <div className="h-5 w-5 rounded-full bg-primary/10 flex items-center justify-center shrink-0 mt-0.5">
+                    <span className="text-primary text-[10px] font-bold">1</span>
                   </div>
-                )}
-              </>
+                  <span className="text-muted-foreground">
+                    {lang === 'es' 
+                      ? 'Revise si su rubro permite deducciones por pronto pago (incentivo municipal).' 
+                      : 'Check if your category allows early payment deductions (municipal incentive).'}
+                  </span>
+                </li>
+                <li className="flex gap-3 text-sm items-start">
+                  <div className="h-5 w-5 rounded-full bg-primary/10 flex items-center justify-center shrink-0 mt-0.5">
+                    <span className="text-primary text-[10px] font-bold">2</span>
+                  </div>
+                  <span className="text-muted-foreground">
+                    {lang === 'es' 
+                      ? 'Mantenga sus ingresos brutos certificados para evitar multas por sub-declaración.' 
+                      : 'Keep your gross income certified to avoid under-reporting penalties.'}
+                  </span>
+                </li>
+              </ul>
+            </div>
+
+            {taxBurden > 10 && (
+              <div className="p-3 rounded-md bg-destructive/5 border border-destructive/10 flex gap-3 items-center animate-pulse">
+                <AlertTriangle className="text-destructive shrink-0" size={18} />
+                <p className="text-[11px] font-medium text-destructive leading-tight">
+                  {lang === 'es' 
+                    ? 'ALERTA: La carga tributaria supera el 10%, revise su rentabilidad operativa.' 
+                    : 'ALERT: Tax burden exceeds 10%, review your operational profitability.'}
+                </p>
+              </div>
             )}
           </CardContent>
         </Card>
