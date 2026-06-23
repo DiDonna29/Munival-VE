@@ -21,7 +21,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { TrendingUp } from "lucide-react"
+import { TrendingUp, Percent, DollarSign, Briefcase } from "lucide-react"
 import { Language, translations } from "@/app/lib/translations"
 import { Button } from "@/components/ui/button"
 
@@ -46,13 +46,13 @@ export function SidebarNav({ lang, setLang, inputs, setInputs }: SidebarNavProps
   }
 
   const handleCategoryChange = (value: string) => {
-    // Definimos valores predeterminados por rubro para mejorar la interactividad
+    // Alícuotas y Mínimos referenciales para Venezuela (Ej: Chacao/Baruta)
     const defaults: Record<string, { rate: number; min: number }> = {
-      retail: { rate: 2.5, min: 5000 },
-      services: { rate: 3.0, min: 4500 },
-      industry: { rate: 1.8, min: 12000 },
-      hospitality: { rate: 4.0, min: 8000 },
-      tech: { rate: 1.5, min: 3000 }
+      retail: { rate: 1.5, min: 25 },
+      services: { rate: 2.5, min: 40 },
+      industry: { rate: 1.2, min: 100 },
+      liquor: { rate: 5.0, min: 150 },
+      tech: { rate: 2.0, min: 30 }
     }
     
     setInputs((prev: any) => ({ 
@@ -64,126 +64,126 @@ export function SidebarNav({ lang, setLang, inputs, setInputs }: SidebarNavProps
   }
 
   return (
-    <Sidebar variant="inset" className="border-r">
-      <SidebarHeader className="p-4">
-        <div className="flex items-center gap-2 px-2">
-          <div className="bg-primary rounded-lg p-2 text-primary-foreground shadow-sm">
-            <TrendingUp size={24} />
+    <Sidebar variant="sidebar" className="border-r">
+      <SidebarHeader className="p-6">
+        <div className="flex items-center gap-3">
+          <div className="bg-primary rounded-xl p-2.5 text-primary-foreground shadow-lg shadow-primary/20">
+            <TrendingUp size={20} strokeWidth={2.5} />
           </div>
-          <span className="text-xl font-bold tracking-tight text-primary">{t.appName}</span>
+          <div className="flex flex-col">
+            <span className="text-xl font-bold tracking-tight text-primary leading-none">{t.appName}</span>
+            <span className="text-[10px] text-muted-foreground font-medium uppercase tracking-widest mt-1">Venezuela</span>
+          </div>
         </div>
       </SidebarHeader>
 
-      <SidebarContent className="px-2">
+      <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel className="px-4 text-primary font-bold">{t.fiscalInputs}</SidebarGroupLabel>
-          <SidebarGroupContent className="p-4 space-y-6">
+          <SidebarGroupLabel className="px-4 text-primary font-bold mb-2 uppercase text-[10px] tracking-widest">
+            {t.fiscalInputs}
+          </SidebarGroupLabel>
+          <SidebarGroupContent className="px-4 space-y-6">
             
             <div className="space-y-2">
-              <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              <Label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+                <Briefcase size={12} />
                 {t.commercialCategory}
               </Label>
               <Select value={inputs.category} onValueChange={handleCategoryChange}>
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Selecciona un rubro" />
+                <SelectTrigger className="w-full bg-background border-primary/20 focus:ring-primary/30">
+                  <SelectValue placeholder="Selecciona rubro" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="retail">{t.categories.retail}</SelectItem>
                   <SelectItem value="services">{t.categories.services}</SelectItem>
                   <SelectItem value="industry">{t.categories.industry}</SelectItem>
-                  <SelectItem value="hospitality">{t.categories.hospitality}</SelectItem>
+                  <SelectItem value="liquor">{t.categories.liquor}</SelectItem>
                   <SelectItem value="tech">{t.categories.tech}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="grossIncome" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              <Label htmlFor="grossIncome" className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+                <DollarSign size={12} />
                 {t.grossIncome}
               </Label>
-              <div className="relative">
-                <span className="absolute left-3 top-2.5 text-muted-foreground text-sm">$</span>
-                <Input
-                  id="grossIncome"
-                  name="grossIncome"
-                  type="number"
-                  value={inputs.grossIncome}
-                  onChange={handleChange}
-                  className="pl-7 font-code"
-                />
-              </div>
+              <Input
+                id="grossIncome"
+                name="grossIncome"
+                type="number"
+                value={inputs.grossIncome}
+                onChange={handleChange}
+                className="font-code font-semibold border-primary/20 focus:ring-primary/30"
+                placeholder="0.00"
+              />
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="taxRate" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                <Label htmlFor="taxRate" className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+                  <Percent size={12} />
                   {t.taxRate}
                 </Label>
-                <div className="relative">
-                  <span className="absolute right-3 top-2.5 text-muted-foreground text-sm">%</span>
-                  <Input
-                    id="taxRate"
-                    name="taxRate"
-                    type="number"
-                    step="0.1"
-                    value={inputs.taxRate}
-                    onChange={handleChange}
-                    className="font-code pr-7"
-                  />
-                </div>
+                <Input
+                  id="taxRate"
+                  name="taxRate"
+                  type="number"
+                  step="0.01"
+                  value={inputs.taxRate}
+                  onChange={handleChange}
+                  className="font-code font-semibold border-primary/20 focus:ring-primary/30"
+                />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="minimumTaxable" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                <Label htmlFor="minimumTaxable" className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
                   {t.minTaxable}
                 </Label>
-                <div className="relative">
-                  <span className="absolute left-3 top-2.5 text-muted-foreground text-sm">$</span>
-                  <Input
-                    id="minimumTaxable"
-                    name="minimumTaxable"
-                    type="number"
-                    value={inputs.minimumTaxable}
-                    onChange={handleChange}
-                    className="pl-7 font-code text-xs"
-                  />
-                </div>
+                <Input
+                  id="minimumTaxable"
+                  name="minimumTaxable"
+                  type="number"
+                  value={inputs.minimumTaxable}
+                  onChange={handleChange}
+                  className="font-code font-semibold border-primary/20 focus:ring-primary/30"
+                />
               </div>
             </div>
 
           </SidebarGroupContent>
         </SidebarGroup>
 
-        <Separator className="my-2 mx-4" />
+        <Separator className="my-4 mx-4 opacity-50" />
 
         <SidebarGroup>
-          <SidebarGroupLabel className="px-4">{t.language}</SidebarGroupLabel>
+          <SidebarGroupLabel className="px-4 text-[10px] uppercase tracking-widest">{t.language}</SidebarGroupLabel>
           <SidebarGroupContent className="px-4 pt-2">
-            <div className="flex gap-2 p-1 bg-muted rounded-md">
+            <div className="flex gap-2 p-1.5 bg-muted/50 rounded-lg border border-primary/5">
               <Button
                 variant={lang === 'en' ? 'default' : 'ghost'}
                 size="sm"
-                className="flex-1"
+                className="flex-1 text-xs h-8"
                 onClick={() => setLang('en')}
               >
-                EN
+                ENGLISH
               </Button>
               <Button
                 variant={lang === 'es' ? 'default' : 'ghost'}
                 size="sm"
-                className="flex-1"
+                className="flex-1 text-xs h-8"
                 onClick={() => setLang('es')}
               >
-                ES
+                ESPAÑOL
               </Button>
             </div>
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
 
-      <SidebarFooter className="p-4">
-        <div className="text-[10px] text-center text-muted-foreground font-medium uppercase tracking-widest">
-          © 2024 Munival Fiscal Solutions
+      <SidebarFooter className="p-6">
+        <div className="text-[10px] text-center text-muted-foreground/60 font-bold uppercase tracking-[0.2em]">
+          Munival Solutions VE
         </div>
       </SidebarFooter>
     </Sidebar>
