@@ -1,4 +1,3 @@
-
 "use client"
 
 import React, { useMemo } from 'react'
@@ -62,18 +61,18 @@ export function AnalyticsDashboard({ lang, inputs }: AnalyticsDashboardProps) {
   }, [lang, isUsingMin, calculatedTax, inputs, t])
 
   return (
-    <div className="flex flex-col gap-6 w-full max-w-7xl mx-auto p-4 md:p-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
+    <div className="flex flex-col gap-6 w-full max-w-7xl mx-auto p-4 md:p-8 animate-in fade-in slide-in-from-bottom-4 duration-700 overflow-x-hidden">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div className="space-y-1">
-          <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight text-foreground flex items-center gap-3">
+        <div className="space-y-1 min-w-0 flex-1">
+          <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight text-foreground flex items-center gap-3 flex-wrap break-words">
             {t.overview}
-            <Badge variant="outline" className="text-primary border-primary/20 bg-primary/5 hidden md:flex">V1.2 Stable</Badge>
+            <Badge variant="outline" className="text-primary border-primary/20 bg-primary/5 hidden md:flex shrink-0">V1.2 Stable</Badge>
           </h1>
-          <p className="text-sm text-muted-foreground font-medium">
+          <p className="text-sm text-muted-foreground font-medium truncate">
             {lang === 'es' ? 'Gestión y simulación de compromiso tributario municipal.' : 'Management and simulation of municipal tax commitment.'}
           </p>
         </div>
-        <div className="flex gap-2 w-full sm:w-auto">
+        <div className="flex gap-2 w-full sm:w-auto shrink-0">
           <Button variant="outline" size="sm" className="gap-2 flex-1 sm:flex-none border-primary/10 hover:bg-primary/5">
             <FileType size={14} className="text-primary" />
             <span className="text-[11px] font-bold uppercase tracking-wider">{t.exportPdf}</span>
@@ -86,39 +85,39 @@ export function AnalyticsDashboard({ lang, inputs }: AnalyticsDashboardProps) {
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        <Card className="shadow-sm hover:shadow-md transition-all border-primary/10">
+        <Card className="shadow-sm hover:shadow-md transition-all border-primary/10 overflow-hidden">
           <CardHeader className="pb-2">
             <CardTitle className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.15em]">{t.calculatedTax}</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold font-code text-primary/70">{formatCurrency(calculatedTax)}</div>
-            <p className="text-[10px] font-semibold text-muted-foreground/70 mt-1 uppercase tracking-tighter">
+            <div className="text-2xl font-bold font-code text-primary/70 break-all">{formatCurrency(calculatedTax)}</div>
+            <p className="text-[10px] font-semibold text-muted-foreground/70 mt-1 uppercase tracking-tighter truncate">
               {inputs.taxRate}% DE {formatCurrency(inputs.grossIncome)}
             </p>
           </CardContent>
         </Card>
         
-        <Card className="shadow-md border-primary/20 bg-primary/[0.03] ring-1 ring-primary/5">
+        <Card className="shadow-md border-primary/20 bg-primary/[0.03] ring-1 ring-primary/5 overflow-hidden">
           <CardHeader className="pb-2">
             <CardTitle className="text-[10px] font-bold text-primary uppercase tracking-[0.15em]">{t.effectiveTax}</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold font-code text-primary">{formatCurrency(effectiveTax)}</div>
-            <div className="flex items-center gap-2 mt-2">
+            <div className="text-3xl font-bold font-code text-primary break-all">{formatCurrency(effectiveTax)}</div>
+            <div className="flex items-center gap-2 mt-2 flex-wrap">
               <Badge variant={isUsingMin ? "destructive" : "default"} className="uppercase text-[9px] font-black px-2 py-0">
                 {isUsingMin ? (lang === 'es' ? 'Mínimo de Ley' : 'Legal Min') : (lang === 'es' ? 'Excedente' : 'Surplus')}
               </Badge>
-              <ShieldCheck size={14} className="text-primary" />
+              <ShieldCheck size={14} className="text-primary shrink-0" />
             </div>
           </CardContent>
         </Card>
 
-        <Card className="shadow-sm sm:col-span-2 lg:col-span-1 border-primary/10">
+        <Card className="shadow-sm sm:col-span-2 lg:col-span-1 border-primary/10 overflow-hidden">
           <CardHeader className="pb-2">
             <CardTitle className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.15em]">{t.taxBurden}</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold font-code">{taxBurden.toFixed(2)}%</div>
+            <div className="text-2xl font-bold font-code break-all">{taxBurden.toFixed(2)}%</div>
             <div className="w-full bg-muted rounded-full h-1.5 mt-3 overflow-hidden">
               <div 
                 className="bg-primary h-full transition-all duration-1000 ease-out shadow-[0_0_10px_rgba(16,185,129,0.5)]" 
@@ -130,7 +129,7 @@ export function AnalyticsDashboard({ lang, inputs }: AnalyticsDashboardProps) {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        <Card className="lg:col-span-7 shadow-xl border-primary/5">
+        <Card className="lg:col-span-7 shadow-xl border-primary/5 overflow-hidden">
           <CardHeader>
             <CardTitle className="text-base flex items-center gap-2 font-bold uppercase tracking-wider">
               <Calculator size={16} className="text-primary" />
@@ -159,9 +158,9 @@ export function AnalyticsDashboard({ lang, inputs }: AnalyticsDashboardProps) {
                   content={({ active, payload }) => {
                     if (active && payload && payload.length) {
                       return (
-                        <div className="bg-background/95 backdrop-blur-md border rounded-xl p-3 shadow-2xl border-primary/20">
-                          <p className="text-[9px] font-black uppercase text-muted-foreground mb-1 tracking-widest">{payload[0].name}</p>
-                          <p className="text-lg font-code font-bold text-primary">{formatCurrency(payload[0].value as number)}</p>
+                        <div className="bg-background/95 backdrop-blur-md border rounded-xl p-3 shadow-2xl border-primary/20 max-w-[200px]">
+                          <p className="text-[9px] font-black uppercase text-muted-foreground mb-1 tracking-widest truncate">{payload[0].name}</p>
+                          <p className="text-lg font-code font-bold text-primary break-all">{formatCurrency(payload[0].value as number)}</p>
                         </div>
                       );
                     }
@@ -182,7 +181,7 @@ export function AnalyticsDashboard({ lang, inputs }: AnalyticsDashboardProps) {
           </CardContent>
         </Card>
 
-        <Card className="lg:col-span-5 shadow-xl border-primary/10 bg-primary/[0.01]">
+        <Card className="lg:col-span-5 shadow-xl border-primary/10 bg-primary/[0.01] overflow-hidden">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-base font-bold uppercase tracking-wider">
               <Info className="text-primary" size={16} />
@@ -198,7 +197,7 @@ export function AnalyticsDashboard({ lang, inputs }: AnalyticsDashboardProps) {
                 <Lightbulb size={12} />
                 {lang === 'es' ? 'DICTAMEN TÉCNICO' : 'TECHNICAL RULING'}
               </h4>
-              <p className="text-sm leading-relaxed text-foreground/80 font-medium italic">
+              <p className="text-sm leading-relaxed text-foreground/80 font-medium italic break-words">
                 "{narrativeAnalysis}"
               </p>
             </div>
@@ -209,21 +208,21 @@ export function AnalyticsDashboard({ lang, inputs }: AnalyticsDashboardProps) {
                 {t.optimizationTips}
               </h4>
               <ul className="space-y-4">
-                <li className="flex gap-4 text-sm items-start group">
+                <li className="flex gap-4 text-sm items-start group min-w-0">
                   <div className="h-6 w-6 rounded-lg bg-primary/10 flex items-center justify-center shrink-0 mt-0.5 group-hover:bg-primary group-hover:text-primary-foreground transition-all duration-300">
                     <span className="text-[10px] font-bold">01</span>
                   </div>
-                  <span className="text-muted-foreground font-medium text-xs leading-snug">
+                  <span className="text-muted-foreground font-medium text-xs leading-snug break-words">
                     {lang === 'es' 
                       ? 'Considere los incentivos por "Pronto Pago" contemplados en la Ley de Armonización Tributaria (LOCAPEM).' 
                       : 'Consider the "Early Payment" incentives included in the Tax Harmonization Law (LOCAPEM).'}
                   </span>
                 </li>
-                <li className="flex gap-4 text-sm items-start group">
+                <li className="flex gap-4 text-sm items-start group min-w-0">
                   <div className="h-6 w-6 rounded-lg bg-primary/10 flex items-center justify-center shrink-0 mt-0.5 group-hover:bg-primary group-hover:text-primary-foreground transition-all duration-300">
                     <span className="text-[10px] font-bold">02</span>
                   </div>
-                  <span className="text-muted-foreground font-medium text-xs leading-snug">
+                  <span className="text-muted-foreground font-medium text-xs leading-snug break-words">
                     {lang === 'es' 
                       ? 'Verifique que su código de actividad (Rubro) corresponda exactamente a su Registro de Comercio para evitar multas.' 
                       : 'Verify that your activity code matches your Trade Registry exactly to avoid penalties.'}
@@ -233,9 +232,9 @@ export function AnalyticsDashboard({ lang, inputs }: AnalyticsDashboardProps) {
             </div>
 
             {taxBurden > 7 && (
-              <div className="p-4 rounded-xl bg-destructive/10 border border-destructive/20 flex gap-4 items-center animate-pulse">
+              <div className="p-4 rounded-xl bg-destructive/10 border border-destructive/20 flex gap-4 items-center animate-pulse overflow-hidden">
                 <AlertTriangle className="text-destructive shrink-0" size={20} />
-                <p className="text-[10px] font-bold text-destructive uppercase leading-tight tracking-tight">
+                <p className="text-[10px] font-bold text-destructive uppercase leading-tight tracking-tight break-words">
                   {lang === 'es' 
                     ? 'ADVERTENCIA: La carga impositiva municipal supera el 7% de sus ingresos brutos. Revise márgenes.' 
                     : 'WARNING: Municipal tax burden exceeds 7% of gross income. Review margins.'}
